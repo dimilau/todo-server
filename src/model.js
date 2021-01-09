@@ -1,4 +1,4 @@
-class ListItem {
+class TodoItem {
     constructor(id, { description, done }) {
         this.id = id;
         this.description = description;
@@ -6,4 +6,4 @@ class ListItem {
     }
 }
 
-export { ListItem }
+export { TodoItem }
