@@ -1,0 +1,5 @@
+user: sammy
+host: localhost
+database: sammy
+password: ayarei
+port: 5432

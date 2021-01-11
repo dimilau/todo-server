@@ -1,5 +1,9 @@
 import { TodoItem } from './model.js'
 import crypto from 'crypto';
+import pkg from 'pg';
+const { Client } = pkg;
+import yaml from 'js-yaml';
+import fs from 'fs';
 
 // mock DB
 var mockDatabase = 
@@ -9,17 +13,30 @@ var mockDatabase =
     { id: 'c', description: 'Wash the car', done: true, },
 ];
 
+var getPgClient  = () => {
+    const config = yaml.load(fs.readFileSync('./postgresrc.yml', 'utf8'));
+    return new Client(config);
+};
+
 const resolver = {
-    TodoItems: () => {
-        console.log(mockDatabase);
-        return mockDatabase;
+    TodoItems: async () => {
+        const client = getPgClient();
+        const text = 'SELECT * FROM todoitem;';
+
+        await client.connect();
+        const res = await client.query(text);
+        client.end();
+        return res.rows;
+        
     },
-    TodoItem: ({ id }) => {
-        let todoItemFound = mockDatabase.find(todoItem => todoItem.id === id);        
-        if (!todoItemFound) {
-            throw new Error('No item exist with id ' + id);
-        }
-        return new TodoItem(id, todoItemFound);
+    TodoItem: async ({ id }) => {
+        const client = getPgClient();
+        const text = "SELECT * FROM todoitem WHERE id = $1;"
+        const values = [id];
+
+        await client.connect();
+        const res = await client.query(text, values);
+        return res.rows[0];
     },
     addTodoItem: ({ input }) => {
         let id = crypto.randomBytes(10).toString('hex');
