@@ -1,5 +1,4 @@
-import { TodoItem } from './model.js'
-import crypto from 'crypto';
+import { Todo } from './model.js'
 import pkg from 'pg';
 const { Client } = pkg;
 import yaml from 'js-yaml';
@@ -19,42 +18,50 @@ var getPgClient  = () => {
 };
 
 const resolver = {
-    TodoItems: async () => {
+    Todos: async () => {
         const client = getPgClient();
-        const text = 'SELECT * FROM todoitem;';
+        const text = 'SELECT * FROM Todo;';
 
         await client.connect();
         const res = await client.query(text);
         client.end();
-        return res.rows;
+        return res.rows.map(row => new Todo(row.id,row));
         
     },
-    TodoItem: async ({ id }) => {
+    Todo: async ({ id }) => {
         const client = getPgClient();
-        const text = "SELECT * FROM todoitem WHERE id = $1;"
+        const text = "SELECT * FROM Todo WHERE id = $1;"
         const values = [id];
 
         await client.connect();
         const res = await client.query(text, values);
-        return res.rows[0];
+        return new Todo(res.rows[0].id, res.rows[0]);
     },
-    addTodoItem: ({ input }) => {
-        let id = crypto.randomBytes(10).toString('hex');
-        mockDatabase.push({id, ...input});
-        return new TodoItem(id, input);
+    addTodo: async ({ input }) => {
+        // let id = crypto.randomBytes(10).toString('hex');
+        // mockDatabase.push({id, ...input});
+        // return new Todo(id, input);
+        const client = getPgClient();
+        const text = "INSERT INTO todo(description, done) VALUES ($1, $2) RETURNING id;"
+        const values = [input.description, input.done];
+
+        await client.connect();
+        const res = await client.query(text ,values);
+        return new Todo(res.rows[0].id, input);
+
     },
-    updateTodoItem: ({ id, input }) => {
+    updateTodo: ({ id, input }) => {
         let foundIndex = mockDatabase.findIndex(x => x.id === id);        
         mockDatabase[foundIndex] = {id, ...input};
-        return new TodoItem(id, input);
+        return new Todo(id, input);
     },
-    deleteTodoItem: ({ id, input }) => {
+    deleteTodo: ({ id, input }) => {
         let foundIndex = mockDatabase.findIndex(x => x.id === id);
         mockDatabase = [
             ...mockDatabase.slice(0, foundIndex), 
             ...mockDatabase.slice(foundIndex + 1)
         ];
-        return new TodoItem(id, input);
+        return new Todo(id, input);
     }
 };
 

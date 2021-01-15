@@ -1,22 +1,22 @@
 import { buildSchema } from 'graphql';
   
 const schema = buildSchema(`
-    input TodoItemInput {
+    input TodoInput {
         description: String!
         done: Boolean!
     },
-    type TodoItem {
+    type Todo {
         id: ID!
         description: String!
         done: Boolean!
     }
     type Query {
-        TodoItems: [TodoItem]!
-        TodoItem(id: ID!): TodoItem!
+        Todos: [Todo]!
+        Todo(id: ID!): Todo!
     }
     type Mutation {
-        addTodoItem(input: TodoItemInput): TodoItem
-        updateTodoItem(id: ID! input: TodoItemInput): TodoItem
+        addTodo(input: TodoInput): Todo
+        updateTodo(id: ID! input: TodoInput): Todo
     }
 `);
 
