@@ -38,11 +38,8 @@ const resolver = {
         return new Todo(res.rows[0].id, res.rows[0]);
     },
     addTodo: async ({ input }) => {
-        // let id = crypto.randomBytes(10).toString('hex');
-        // mockDatabase.push({id, ...input});
-        // return new Todo(id, input);
         const client = getPgClient();
-        const text = "INSERT INTO todo(description, done) VALUES ($1, $2) RETURNING id;"
+        const text = "INSERT INTO todo(description, done) VALUES ($1, $2) RETURNING id;";
         const values = [input.description, input.done];
 
         await client.connect();
@@ -50,18 +47,23 @@ const resolver = {
         return new Todo(res.rows[0].id, input);
 
     },
-    updateTodo: ({ id, input }) => {
-        let foundIndex = mockDatabase.findIndex(x => x.id === id);        
-        mockDatabase[foundIndex] = {id, ...input};
-        return new Todo(id, input);
+    updateTodo: async ({ id, input }) => {
+        const client = getPgClient();
+        const text = "UPDATE todo SET description = $1, done = $2 WHERE id = $3 RETURNING *";
+        const values = [input.description, input.done, id];
+
+        await client.connect();
+        const res = await client.query(text, values);
+        return new Todo(res.rows[0].id, input);
     },
-    deleteTodo: ({ id, input }) => {
-        let foundIndex = mockDatabase.findIndex(x => x.id === id);
-        mockDatabase = [
-            ...mockDatabase.slice(0, foundIndex), 
-            ...mockDatabase.slice(foundIndex + 1)
-        ];
-        return new Todo(id, input);
+    deleteTodo: async ({ id }) => {
+        const client = getPgClient();
+        const text = "DELETE FROM todo WHERE id = $1 RETURNING *";
+        const values = [id];
+
+        await client.connect();
+        const res = await client.query(text, values);
+        return new Todo(res.rows[0].id, res.rows[0]);
     }
 };
 

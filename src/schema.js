@@ -17,6 +17,7 @@ const schema = buildSchema(`
     type Mutation {
         addTodo(input: TodoInput): Todo
         updateTodo(id: ID! input: TodoInput): Todo
+        deleteTodo(id: ID!): Todo
     }
 `);
 
