@@ -1,5 +1,5 @@
 import { buildSchema } from 'graphql';
-  
+
 const schema = buildSchema(`
     input TodoInput {
         description: String!
